@@ -48,7 +48,7 @@ find ~/Emergency-LLM/models -name "*.safetensors" | wc -l   # expect ~48+
 
 1. **Network**: ConnectX-7 RoCE between all boxes (switch or pairwise CX7).
    On OUR fleet the fabric is `enp1s0f0np0` / HCA `rocep1s0f0`, IPs
-   192.168.100.x — the repo's defaults are someone else's (`enp1s0f1np1`,
+   your-CX7-subnet — the repo's defaults are someone else's (`enp1s0f1np1`,
    10.0.0.x). Edit `.env.tp4` accordingly. Keep our Netplan `cx7-roce`
    profile discipline (see cx7-cluster skill; NetworkManager wipes RoCE IPs).
 2. `cp -n .env.tp4.example .env.tp4` — set `HEAD_IP`, `WORKER_IPS`,
