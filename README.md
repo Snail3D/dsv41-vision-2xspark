@@ -1,8 +1,8 @@
 # DeepSeek-V4.1-Flash (EXL3) WITH VISION on 2× DGX Spark
 
 **The upstream 2×Spark recipe ships vision disabled. This repo enables it —
-tested and working — via three patches and one documented kernel-contract
-discovery.**
+tested and working — via a documented kernel-contract discovery and a
+bind-mounted patch set (no image rebuild).**
 
 Based on [sfxnz/DeepSeek-V4.1-Flash-EXL3-vLLM-2x-DGX-Spark](https://github.com/sfxnz/DeepSeek-V4.1-Flash-EXL3-vLLM-2x-DGX-Spark)
 (same pack, same image, same `run.sh` flow). No image rebuild needed — every
@@ -50,7 +50,10 @@ Trade-off: in-image bidirectional visibility is not guaranteed for image spans
 wider than the indexer's selection — small/medium images are effectively fully
 visible; very large images lean on the indexer's relevance ranking.
 
-## The three upstream bugs this fixes
+## The upstream bugs this fixes
+
+(plus a fourth fix: `run.sh` never forwarded vision env to the worker rank,
+so multi-node ranks silently ran different configs — head vision, worker text.)
 
 1. **`sitecustomize.py` hardcodes `language_model_only=True`** — it zeroes
    `vision_max_n_token` on every config build, so requesting vision always
@@ -83,8 +86,12 @@ flags, all documented in `PATCHES.md`):
 - optional `DSV41_PROBE` instrumentation (probe_fi.py) that logs the exact
   kernel-call contract — this is how the dual-lane interface was mapped
 
-Launch: `LANGUAGE_MODEL_ONLY=0 DSV41_VISION=1 bash dsv41-launch.sh`
-(fabric overrides for our CX7 net are inside the launcher; adapt yours).
+Launch (the launcher already sets these; shown for clarity):
+```bash
+LANGUAGE_MODEL_ONLY=0 DSV41_VISION=1 bash dsv41-launch.sh
+```
+The launcher carries CX7 fabric overrides (HEAD_IP / WORKER_HOST / IFACE /
+HCA) — edit them for your net.
 
 **Prereqs (learned the hard way — do not skip):**
 - 64 GB swapfile on BOTH nodes (`fallocate -l 64G /swapfile; mkswap; swapon`,
@@ -124,8 +131,9 @@ that breaks the kernel. Evidence in `EVIDENCE.md`.
 - `PATCHES.md` — annotated diffs vs upstream recipe
 - `RUNBOOK.md` — day-2 operations (restart, rollback, gotchas)
 - `EVIDENCE.md` — probe output + test transcripts
-- `TP4-SAUCE.md` — notes for the 3/4-box native-MXFP4 SGLang path (vision
-  there is native and uncompromised)
+- `TP4-SAUCE.md` — deployment notes for the 3/4-box native-MXFP4 SGLang
+  path (vision there is native and uncompromised; this repo's checkpoint
+  download doubles as its prerequisite)
 
 ## License & credit
 
