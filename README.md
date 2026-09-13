@@ -146,6 +146,16 @@ that breaks the kernel. Evidence in `EVIDENCE.md`.
   path (vision there is native and uncompromised; this repo's checkpoint
   download doubles as its prerequisite)
 
+## Upstream momentum (2026-09-13)
+
+The sfxnz recipe moved since our base: CUDA graphs are now the default
+(`DSV41_ALLOW_CUDA_GRAPHS=1`, gated warmup replaces `ENFORCE_EAGER=1` —
+measured ~+8% over eager p2b: 14.18 → 15.29 tok/s on their prose harness),
+plus native p2b fused-MoE kernels (`widen_p2b_shapes.py`) and an Engram
+prestage loader. Our PR [#3](https://github.com/sfxnz/DeepSeek-V4.1-Flash-EXL3-vLLM-2x-DGX-Spark/pull/3)
+carries the vision patch set rebased onto that head; our deployed stack now
+runs the new image (graphs on, eager off) with vision verified on top.
+
 ## Related work
 
 - [eugr/spark-vllm-docker](https://github.com/eugr/spark-vllm-docker) — the
