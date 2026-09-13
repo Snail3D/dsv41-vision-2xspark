@@ -44,3 +44,22 @@ lens) on the compressed cache. This is the interface vision must respect.
 4. Text smoke (recipe probe): "323" ✅
 5. Kernel errors across all vision requests: 0
 6. Prose decode after vision enable: unchanged (~21 tok/s c=1, DSpark spec)
+
+## Production incident: mid-generation degradation with mm_prefix mode on
+
+A real agent session (~110K tokens of mixed code/prose/tool output) generated
+1715 chars cleanly, then degraded into multilingual character soup (Cyrillic /
+CJK / Hangul mixture) mid-answer — decode-phase corruption, not prefill.
+
+Deltas vs the 17h-stable text-only configuration: only the vision-enabling
+config change. The mm_prefix attention mode (`is_mm_prefix_lm`, plus
+`mm_prefix_clamp_sliding_window`, `mm_prefix_span_leading_pad_modulus`) was
+active but unused by the approximation (attention vmnt=0) — an untested
+metadata path at long context. Fix: disable mm_prefix mode in the config hook
+so attention runs the proven text paths; image tokens ride the indexer lane as
+plain tokens. Vision re-verified after the change (image description correct,
+text smoke intact, spec-decode acceptance normal).
+
+This is why `dsv41_attention_vmnt` and `is_mm_prefix_lm` are separate knobs:
+the SM120 kernel contract forces the first to 0; production stability required
+the second to 0 as well.

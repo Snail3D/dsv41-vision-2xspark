@@ -50,6 +50,17 @@ Trade-off: in-image bidirectional visibility is not guaranteed for image spans
 wider than the indexer's selection — small/medium images are effectively fully
 visible; very large images lean on the indexer's relevance ranking.
 
+**Second bug found in production (2026-09-13):** with vision enabled, the
+config also silently enables the `mm_prefix` attention-metadata mode
+(`is_mm_prefix_lm = vision_n_layers > 0`). That mode was never exercised at
+long context by anyone (upstream ships text-only, where it auto-disables), and
+a ~110K-token real session degraded mid-generation into multilingual garbage
+(~1700 chars clean, then soup) with mm_prefix on. The patched sitecustomize now
+sets `is_mm_prefix_lm = False` (+ the two related flags), making the attention
+stack byte-identical to the proven text-only configuration while the vision
+tower, encoder and image pipeline stay on. Image tokens flow as plain tokens
+through the Lightning Indexer lane.
+
 ## The upstream bugs this fixes
 
 (plus a fourth fix: `run.sh` never forwarded vision env to the worker rank,
