@@ -146,6 +146,16 @@ that breaks the kernel. Evidence in `EVIDENCE.md`.
   path (vision there is native and uncompromised; this repo's checkpoint
   download doubles as its prerequisite)
 
+## Related work
+
+- [eugr/spark-vllm-docker](https://github.com/eugr/spark-vllm-docker) — the
+  larger community Spark-cluster project; its B12X attention backend achieves
+  native vision for the sibling model DeepSeek-V4-Flash (0731) on the same
+  topology. No V4.1 recipe exists there yet (as of 2026-09-13).
+- [bidual/awesome-dgx-spark](https://github.com/bidual/awesome-dgx-spark) —
+  curated list of Spark clustering projects, including independent 2-node
+  DeepSeek-V4 DSpark ports.
+
 ## License & credit
 
 - Base recipe: sfxnz (repo link above) — follow its license terms
